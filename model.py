@@ -18,9 +18,9 @@ class Pooler(nn.Module):
         assert self.pooler_type in ["cls", "cls_before_pooler", "avg", "avg_top2", "avg_first_last"], "unrecognized pooling type %s" % self.pooler_type
 
     def forward(self, attention_mask, outputs):
-        last_hidden = outputs.last_hidden_state
-        pooler_output = outputs.pooler_output
-        hidden_states = outputs.hidden_states
+        last_hidden = outputs[0]
+        pooler_output = outputs[1]
+        hidden_states = outputs[0]
 
         if self.pooler_type in ['cls_before_pooler', 'cls']:
             return last_hidden[:, 0]
@@ -46,7 +46,7 @@ class MLPLayer(nn.Module):
 
     def __init__(self, config):
         super().__init__()
-        self.dense = nn.Linear(config.hidden_size, config.hidden_size)
+        self.dense = nn.Linear(config.HIDDEN_SIZE, config.HIDDEN_SIZE)
         self.activation = nn.Tanh()
 
     def forward(self, features, **kwargs):
@@ -71,16 +71,15 @@ class Similarity(nn.Module):
 class model(nn.Module):
     def __init__(self,config, model_path, pooler_type):
         super(model, self).__init__()
-        self.albert = AutoModel.from_pretrained(model_path)
-        self.embeddings = self.albert.embeddings
-        self.encoder = self.albert.encoder.layer[0:7]
+        self.bert = AutoModel.from_pretrained(model_path)
         self.pooler = Pooler(pooler_type)
         self.mlp = MLPLayer(config)
+        self.sim = Similarity(temp=config.TEMP)
 
-    def forward(self, **x):
-        x = self.embeddings(x)
-        x = self.encoder(x)
-        x = self.pooler(x)
+    def forward(self, ids, mask, token_type_ids, batch_size, num_sent):
+        x = self.bert(ids, attention_mask=mask, token_type_ids=token_type_ids, return_dict=False)
+        x = self.pooler(mask, x)
+        x = x.view((batch_size, num_sent, x.size(-1)))
         x = self.mlp(x)
         return x
 
