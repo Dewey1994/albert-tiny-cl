@@ -9,7 +9,7 @@ import pandas as pd
 from config import config
 import transformers
 from torch.cuda.amp import GradScaler, autocast
-df = pd.read_csv("data.csv")
+df = pd.read_csv("data/data.csv")
 st = []
 for idx, i in df.iterrows():
     tmp = []

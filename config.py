@@ -4,7 +4,7 @@ from torch.cuda.amp import GradScaler
 
 
 class config:
-    MODEL_NAME = 'bert-base-chinese-layer4'
+    MODEL_NAME = 'chinese-bert-wwm-ext-layer4'
     NB_EPOCHS = 10
     LR = 2e-5
     MAX_LEN = 32
@@ -14,7 +14,7 @@ class config:
     HIDDEN_SIZE = 768
     TEMP = 0.05
     HARD_NEGATIVE_WEIGHT = 1
-    FILE_NAME = './data_all.csv'
-    MODEL_PATH = "./bert-base-chinese"
-    TOKENIZER = transformers.AutoTokenizer.from_pretrained("./bert-base-chinese", do_lower_case=True)
+    FILE_NAME = 'data/data_all.csv'
+    MODEL_PATH = "./chinese-bert-wwm-ext"
+    TOKENIZER = transformers.AutoTokenizer.from_pretrained(MODEL_PATH, do_lower_case=True)
     scaler = GradScaler()
